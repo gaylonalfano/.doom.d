@@ -13,6 +13,26 @@
 
 ;; To install SOME-PACKAGE from MELPA, ELPA or emacsmirror:
 ;(package! some-package)
+(package! org-super-agenda)
+(package! elpy)
+(package! company-statistics)
+(package! company-web)
+(package! company-try-hard)
+(package! company-quickhelp)
+(package! buftra
+    :recipe (:host github :repo "humitos/buftra.el"))
+(package! py-pyment
+    :recipe (:host github :repo "humitos/py-cmd-buffer.el"))
+(package! py-isort
+    :recipe (:host github :repo "humitos/py-cmd-buffer.el"))
+(package! py-autoflake
+    :recipe (:host github :repo "humitos/py-cmd-buffer.el"))
+(package! py-docformatter
+    :recipe (:host github :repo "humitos/py-cmd-buffer.el"))
+(package! blacken)
+(package! python-docstring)
+(package! pyenv
+    :recipe (:host github :repo "aiguofer/pyenv.el"))
 
 ;; To install a package directly from a particular repo, you'll need to specify
 ;; a `:recipe'. You'll find documentation on what `:recipe' accepts here:
