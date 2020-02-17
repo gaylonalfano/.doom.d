@@ -33,6 +33,8 @@
 (package! python-docstring)
 (package! pyenv
     :recipe (:host github :repo "aiguofer/pyenv.el"))
+(package! djangonaut)
+(package! jupyter)
 
 ;; To install a package directly from a particular repo, you'll need to specify
 ;; a `:recipe'. You'll find documentation on what `:recipe' accepts here:

@@ -119,19 +119,7 @@
         (if (string-equal "Python" (format-mode-line mode-name nil nil curr))
             (pyenv-use-corresponding)))
       (add-hook 'switch-buffer-functions 'pyenv-update-on-buffer-switch))
-  ;; elpy configuration from https://medium.com/analytics-vidhya/managing-a-python-development-environment-in-emacs-43897fd48c6a
-  (use-package! elpy
-      ; :straight t
-      :bind
-      (:map elpy-mode-map
-            ("C-M-n" . elpy-nav-forward-block)
-            ("C-M-p" . elpy-nav-backward-block))
-      :hook ((elpy-mode . flycheck-mode)
-             (pyenv-mode . elpy-rpc-restart))
-      :init
-      (elpy-enable)
-      :config
-      (setq elpy-modules (delq 'elpy-module-flymake elpy-modules)))
+
   (use-package! buftra
       ; :recipe (:host github :repo "humitos/buftra.el")
       )
@@ -162,8 +150,43 @@
   (use-package! python-docstring
       ; :straight t
       :hook (python-mode . python-docstring-mode))
+  ;; elpy configuration from https://medium.com/analytics-vidhya/managing-a-python-development-environment-in-emacs-43897fd48c6a
+  (use-package! elpy
+      ; :straight t
+      :defer t
+      :bind
+      (:map elpy-mode-map
+            ("C-M-n" . elpy-nav-forward-block)
+            ("C-M-p" . elpy-nav-backward-block))
+      :hook ((elpy-mode . flycheck-mode)
+             (pyenv-mode . elpy-rpc-restart))
+      :init
+      ; (elpy-version)
+      ; (elpy-enable)
+      (advice-add 'python-mode :before 'elpy-enable)
+      :config
+      (setq elpy-modules (delq 'elpy-module-flymake elpy-modules)))
+  (use-package! djangonaut
+      :config
+      (setq pythonic-interpreter "python")
+      (global-djangonaut-mode))
+  (use-package! jupyter
+    ; :straight t
+    :hook
+    (jupyter-repl-mode . (lambda ()
+                           (setq company-backends '(company-capf))))
+    :bind
+    (:map jupyter-repl-mode-map
+          ("C-M-n" . jupyter-repl-history-next)
+          ("C-M-p" . jupyter-repl-history-previous)
+          ("M-n" . jupyter-repl-forward-cell)
+          ("M-p" . jupyter-repl-backward-cell)
+          :map jupyter-repl-interaction-mode-map
+          ("M-i" . nil)
+          ("C-?" . jupyter-inspect-at-point)
+          )
+    )
 )
-
 ;; Company configuration from same Elpy guide
 (use-package! company
   ; :straight t
