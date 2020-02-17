@@ -52,6 +52,7 @@
 ;; You can also try 'gd' (or 'C-c g d') to jump to their definition and see how
 ;; they are implemented.
 ;;
+;; ROUND 2 Python Elpy attempt following RealPython guide (mostly)
 (use-package! org-super-agenda
   :after org-agenda
   :init
@@ -73,120 +74,88 @@
 )
 ;; Hide the startup message
 ;; (setq inhibit-startup-message)
+; (use-package! elpy
+;     :init
+;     (elpy-enable)
+; )
 
-(use-package python
-  :hook (inferior-python-mode . fix-python-password-entry)
-  :config
+; (use-package! python
+;   :hook (inferior-python-mode . fix-python-password-entry)
+;   :config
 
-  (setq python-shell-interpreter "jupyter-console"
-        python-shell-interpreter-args "--simple-prompt"
-        python-shell-prompt-detect-failure-warning nil)
-  (add-to-list 'python-shell-completion-native-disabled-interpreters
-               "jupyter-console")
-  (add-to-list 'python-shell-completion-native-disabled-interpreters
-               "jupyter")
+;   (setq python-shell-interpreter "jupyter-console"
+;         python-shell-interpreter-args "--simple-prompt"
+;         python-shell-prompt-detect-failure-warning nil)
+;   (add-to-list 'python-shell-completion-native-disabled-interpreters
+;                "jupyter-console")
+;   (add-to-list 'python-shell-completion-native-disabled-interpreters
+;                "jupyter")
+;; RealPython sample (mostly)
+(use-package! python
+    :config
+    (setq python-shell-interpreter "jupyter-console"
+          python-shell-interpreter-args "--simple-prompt"
+          python-shell-prompt-detect-failure-warning nil)
+    (add-to-list 'python-shell-completion-native-disabled-interpreters
+                  "jupyter-console")
+    (add-to-list 'python-shell-completion-native-disabled-interpreters
+                 "jupyter"))
 
-  (defun fix-python-password-entry ()
-    (push
-     'comint-watch-for-password-prompt comint-output-filter-functions))
-
-  (defun my-setup-python (orig-fun &rest args)
-    "Use corresponding kernel"
-    (let* ((curr-python (car (split-string (pyenv--version-name) ":")))
-           (python-shell-buffer-name (concat "Python-" curr-python))
-           (python-shell-interpreter-args (if (bound-and-true-p djangonaut-mode)
-                                              "shell_plus -- --simple-prompt"
-                                            (concat "--simple-prompt --kernel=" curr-python)))
-           (python-shell-interpreter (if (bound-and-true-p djangonaut-mode)
-                                         "django-admin"
-                                       python-shell-interpreter)))
-      (apply orig-fun args)))
-
-  (advice-add 'python-shell-get-process-name :around #'my-setup-python)
-  (advice-add 'python-shell-calculate-command :around #'my-setup-python)
-
-
-  (use-package! pyenv
-      ; :straight (:host github :repo "aiguofer/pyenv.el")
-      :config
-      (setq pyenv-use-alias 't)
-      (setq pyenv-modestring-prefix " ")
-      (setq pyenv-modestring-postfix nil)
-      (setq pyenv-set-path nil)
-
-      (global-pyenv-mode)
-      (defun pyenv-update-on-buffer-switch (prev curr)
-        (if (string-equal "Python" (format-mode-line mode-name nil nil curr))
-            (pyenv-use-corresponding)))
-      (add-hook 'switch-buffer-functions 'pyenv-update-on-buffer-switch))
-
-  (use-package! buftra
-      ; :recipe (:host github :repo "humitos/buftra.el")
-      )
-  (use-package! py-pyment
-      ; :recipe (:host github :repo "humitos/py-cmd-buffer.el")
-      :config
-      (setq py-pyment-options '("--output=numpydoc")))
-  (use-package! py-isort
-      ; :recipe (:host github :repo "humitos/py-cmd-buffer.el")
-      :hook (python-mode . py-isort-enable-on-save)
-      :config
-      (setq py-isort-options '("--lines=88" "-m=3" "-tc" "-fgw=0" "-ca")))
-  (use-package! py-autoflake
-      ; :recipe (:host github :repo "humitos/py-cmd-buffer.el")
-      :hook (python-mode . py-autoflake-enable-on-save)
-      :config
-      (setq py-autoflake-options '("--expand-star-imports")))
-  (use-package! py-docformatter
-      ; :recipe (:host github :repo "humitos/py-cmd-buffer.el")
-      :hook (python-mode . py-docformatter-enable-on-save)
-      :config
-      (setq py-docformatter-options '("--wrap-summaries=88" "--pre-summary-newline")))
-  (use-package! blacken
-      ; :straight t
-      :hook (python-mode . blacken-mode)
-      :config
-      (setq blacken-line-length '88))
-  (use-package! python-docstring
-      ; :straight t
-      :hook (python-mode . python-docstring-mode))
-  ;; elpy configuration from https://medium.com/analytics-vidhya/managing-a-python-development-environment-in-emacs-43897fd48c6a
-  (use-package! elpy
-      ; :straight t
-      :defer t
-      :bind
-      (:map elpy-mode-map
-            ("C-M-n" . elpy-nav-forward-block)
-            ("C-M-p" . elpy-nav-backward-block))
-      :hook ((elpy-mode . flycheck-mode)
-             (pyenv-mode . elpy-rpc-restart))
-      :init
-      ; (elpy-version)
-      ; (elpy-enable)
-      (advice-add 'python-mode :before 'elpy-enable)
-      :config
-      (setq elpy-modules (delq 'elpy-module-flymake elpy-modules)))
-  (use-package! djangonaut
-      :config
-      (setq pythonic-interpreter "python")
-      (global-djangonaut-mode))
-  (use-package! jupyter
-    ; :straight t
-    :hook
-    (jupyter-repl-mode . (lambda ()
-                           (setq company-backends '(company-capf))))
-    :bind
-    (:map jupyter-repl-mode-map
-          ("C-M-n" . jupyter-repl-history-next)
-          ("C-M-p" . jupyter-repl-history-previous)
-          ("M-n" . jupyter-repl-forward-cell)
-          ("M-p" . jupyter-repl-backward-cell)
-          :map jupyter-repl-interaction-mode-map
-          ("M-i" . nil)
-          ("C-?" . jupyter-inspect-at-point)
-          )
-    )
+;; trying to get pyenv and elpy to work together
+(use-package! elpy
+    :hook 
+    (elpy-mode . flycheck-mode)
+     ;; Cause recursive load error:
+     ; (pyenv-mode . elpy-rpc-restart))
+    :init
+    (elpy-enable)
+    :config
+    (setenv "workon_home" "~/.pyenv/versions/")
+    (setq elpy-rpc-backend "jedi")
+    (setq python-shell-interpreter "~/.pyenv/shims/python3")
+    (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
 )
+; (use-package! elpy
+;     ; :straight t
+;     :defer t
+;     :bind
+;     (:map elpy-mode-map
+;           ("C-M-n" . elpy-nav-forward-block)
+;           ("C-M-p" . elpy-nav-backward-block))
+;     :hook ((elpy-mode . flycheck-mode)
+;            (pyenv-mode . elpy-rpc-restart))
+;     :init
+;     ; (elpy-version)
+;     ; (elpy-enable)
+;     (advice-add 'python-mode :after 'elpy-enable)
+;     :config
+;     (setq elpy-modules (delq 'elpy-module-flymake elpy-modules)))
+
+(use-package! blacken
+    ; :straight t
+    :hook (python-mode . blacken-mode)
+    :config
+    (setq blacken-line-length '88))
+
+(use-package! python-docstring
+    :hook (python-mode . python-docstring-mode))
+
+
+(use-package! jupyter
+  ; :straight t
+  :hook
+  (jupyter-repl-mode . (lambda ()
+                         (setq company-backends '(company-capf))))
+  :bind
+  (:map jupyter-repl-mode-map
+        ("C-M-n" . jupyter-repl-history-next)
+        ("C-M-p" . jupyter-repl-history-previous)
+        ("M-n" . jupyter-repl-forward-cell)
+        ("M-p" . jupyter-repl-backward-cell)
+        :map jupyter-repl-interaction-mode-map
+        ("M-i" . nil)
+        ("C-?" . jupyter-inspect-at-point)))
+
 ;; Company configuration from same Elpy guide
 (use-package! company
   ; :straight t
@@ -219,3 +188,190 @@
       :config
       (company-quickhelp-mode))
 )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+;; FAILED Python Elpy attempt:
+; (use-package! org-super-agenda
+;   :after org-agenda
+;   :init
+;   (setq org-super-agenda-groups '((:name "Today"
+;                                   :time-grid t
+;                                   :scheduled today)
+;                            (:name "Due today"
+;                                   :deadline today)
+;                            (:name "Important"
+;                                   :priority "A")
+;                            (:name "Overdue"
+;                                   :deadline past)
+;                            (:name "Due soon"
+;                                   :deadline future)
+;                            (:name "Big Outcomes"
+;                                   :tag "bo")))
+;   :config
+;   (org-super-agenda-mode)
+; )
+; ;; Hide the startup message
+; ;; (setq inhibit-startup-message)
+
+; (use-package! python
+;   :hook (inferior-python-mode . fix-python-password-entry)
+;   :config
+
+;   (setq python-shell-interpreter "jupyter-console"
+;         python-shell-interpreter-args "--simple-prompt"
+;         python-shell-prompt-detect-failure-warning nil)
+;   (add-to-list 'python-shell-completion-native-disabled-interpreters
+;                "jupyter-console")
+;   (add-to-list 'python-shell-completion-native-disabled-interpreters
+;                "jupyter")
+
+;   (defun fix-python-password-entry ()
+;     (push
+;      'comint-watch-for-password-prompt comint-output-filter-functions))
+
+;   (defun my-setup-python (orig-fun &rest args)
+;     "Use corresponding kernel"
+;     (let* ((curr-python (car (split-string (pyenv--version-name) ":")))
+;            (python-shell-buffer-name (concat "Python-" curr-python))
+;            (python-shell-interpreter-args (if (bound-and-true-p djangonaut-mode)
+;                                               "shell_plus -- --simple-prompt"
+;                                             (concat "--simple-prompt --kernel=" curr-python)))
+;            (python-shell-interpreter (if (bound-and-true-p djangonaut-mode)
+;                                          "django-admin"
+;                                        python-shell-interpreter)))
+;       (apply orig-fun args)))
+
+;   (advice-add 'python-shell-get-process-name :around #'my-setup-python)
+;   (advice-add 'python-shell-calculate-command :around #'my-setup-python)
+
+
+;   (use-package! pyenv
+;       ; :straight (:host github :repo "aiguofer/pyenv.el")
+;       :config
+;       (setq pyenv-use-alias 't)
+;       (setq pyenv-modestring-prefix " ")
+;       (setq pyenv-modestring-postfix nil)
+;       (setq pyenv-set-path nil)
+
+;       (global-pyenv-mode)
+;       (defun pyenv-update-on-buffer-switch (prev curr)
+;         (if (string-equal "Python" (format-mode-line mode-name nil nil curr))
+;             (pyenv-use-corresponding)))
+;       (add-hook 'switch-buffer-functions 'pyenv-update-on-buffer-switch))
+
+;   (use-package! buftra
+;       ; :recipe (:host github :repo "humitos/buftra.el")
+;       )
+;   (use-package! py-pyment
+;       ; :recipe (:host github :repo "humitos/py-cmd-buffer.el")
+;       :config
+;       (setq py-pyment-options '("--output=numpydoc")))
+;   (use-package! py-isort
+;       ; :recipe (:host github :repo "humitos/py-cmd-buffer.el")
+;       :hook (python-mode . py-isort-enable-on-save)
+;       :config
+;       (setq py-isort-options '("--lines=88" "-m=3" "-tc" "-fgw=0" "-ca")))
+;   (use-package! py-autoflake
+;       ; :recipe (:host github :repo "humitos/py-cmd-buffer.el")
+;       :hook (python-mode . py-autoflake-enable-on-save)
+;       :config
+;       (setq py-autoflake-options '("--expand-star-imports")))
+;   (use-package! py-docformatter
+;       ; :recipe (:host github :repo "humitos/py-cmd-buffer.el")
+;       :hook (python-mode . py-docformatter-enable-on-save)
+;       :config
+;       (setq py-docformatter-options '("--wrap-summaries=88" "--pre-summary-newline")))
+;   (use-package! blacken
+;       ; :straight t
+;       :hook (python-mode . blacken-mode)
+;       :config
+;       (setq blacken-line-length '88))
+;   (use-package! python-docstring
+;       ; :straight t
+;       :hook (python-mode . python-docstring-mode))
+;   ;; elpy configuration from https://medium.com/analytics-vidhya/managing-a-python-development-environment-in-emacs-43897fd48c6a
+;   (use-package! elpy
+;       ; :straight t
+;       :defer t
+;       :bind
+;       (:map elpy-mode-map
+;             ("C-M-n" . elpy-nav-forward-block)
+;             ("C-M-p" . elpy-nav-backward-block))
+;       :hook ((elpy-mode . flycheck-mode)
+;              (pyenv-mode . elpy-rpc-restart))
+;       :init
+;       ; (elpy-version)
+;       ; (elpy-enable)
+;       (advice-add 'python-mode :after 'elpy-enable)
+;       :config
+;       (setq elpy-modules (delq 'elpy-module-flymake elpy-modules)))
+;   (use-package! djangonaut
+;       :config
+;       (setq pythonic-interpreter "python")
+;       (global-djangonaut-mode))
+;   (use-package! jupyter
+;     ; :straight t
+;     :hook
+;     (jupyter-repl-mode . (lambda ()
+;                            (setq company-backends '(company-capf))))
+;     :bind
+;     (:map jupyter-repl-mode-map
+;           ("C-M-n" . jupyter-repl-history-next)
+;           ("C-M-p" . jupyter-repl-history-previous)
+;           ("M-n" . jupyter-repl-forward-cell)
+;           ("M-p" . jupyter-repl-backward-cell)
+;           :map jupyter-repl-interaction-mode-map
+;           ("M-i" . nil)
+;           ("C-?" . jupyter-inspect-at-point)
+;           )
+;     )
+; )
+; ;; Company configuration from same Elpy guide
+; (use-package! company
+;   ; :straight t
+;   :diminish company-mode
+;   :init
+;   (global-company-mode)
+;   :config
+;   ;; set default `company-backends'
+;   (setq company-backends
+;         '((company-files          ; files & directory
+;            company-keywords       ; keywords
+;            company-capf)          ; completion-at-point-functions
+;           (company-abbrev company-dabbrev)
+;           ))
+;   (use-package! company-statistics
+;       ; :straight t
+;       :init
+;       (company-statistics-mode))
+;   (use-package! company-web
+;       ; :straight t)
+;       )
+;   (use-package! company-try-hard
+;       ; :straight t
+;       :bind
+;       (("C-<tab>" . company-try-hard)
+;        :map company-active-map
+;        ("C-<tab>" . company-try-hard)))
+;   (use-package! company-quickhelp
+;       ; :straight t
+;       :config
+;       (company-quickhelp-mode))
+; )
