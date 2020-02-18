@@ -1,5 +1,4 @@
 ;;; init.el -*- lexical-binding: t; -*-
-
 ;; Copy this file to ~/.doom.d/init.el or ~/.config/doom/init.el ('doom install'
 ;; will do this for you). The `doom!' block below controls what modules are
 ;; enabled and in what order they will be loaded. Remember to run 'doom refresh'
@@ -16,6 +15,7 @@
        (company            ; the ultimate code completion backend
         +tng
         +auto              ; as-you-type code completion
+        +lsp
         +childframe)       ; a nicer company UI
        ;;helm              ; the *other* search engine for love and life
        ;;ido               ; the other *other* search engine...
@@ -87,7 +87,7 @@
        gist              ; interacting with github gists
        (lookup           ; helps you navigate your code and documentation
         +docsets)        ; ...or in Dash docsets locally
-       ;;lsp
+       lsp
        macos             ; MacOS-specific commands
        magit             ; a git porcelain for Emacs
        make              ; run make tasks from Emacs
@@ -136,8 +136,8 @@
        (org              ; organize your plain life in plain text
         +dragndrop       ; drag & drop files/images into org buffers
         ;;+hugo            ; use Emacs for hugo blogging
-        ;;+jupyter        ; ipython/jupyter support for babel
-        ;;+pandoc          ; export-with-pandoc support
+        +jupyter        ; ipython/jupyter support for babel
+        +pandoc          ; export-with-pandoc support
         ;;+pomodoro        ; be fruitful with the tomato technique
         +present)        ; using org-mode for presentations
        ;;perl              ; write code no one else can comprehend

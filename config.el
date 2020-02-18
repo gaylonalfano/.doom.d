@@ -51,85 +51,88 @@
 ;;
 ;; You can also try 'gd' (or 'C-c g d') to jump to their definition and see how
 ;; they are implemented.
-;;
+;; ========================================
 ;; ROUND 2 Python Elpy attempt following RealPython guide (mostly)
-(use-package! org-super-agenda
-  :after org-agenda
-  :init
-  (setq org-super-agenda-groups '((:name "Today"
-                                  :time-grid t
-                                  :scheduled today)
-                           (:name "Due today"
-                                  :deadline today)
-                           (:name "Important"
-                                  :priority "A")
-                           (:name "Overdue"
-                                  :deadline past)
-                           (:name "Due soon"
-                                  :deadline future)
-                           (:name "Big Outcomes"
-                                  :tag "bo")))
-  :config
-  (org-super-agenda-mode)
-)
-;; Hide the startup message
-;; (setq inhibit-startup-message)
-; (use-package! elpy
-;     :init
-;     (elpy-enable)
-; )
-
-; (use-package! python
-;   :hook (inferior-python-mode . fix-python-password-entry)
+; (use-package! org-super-agenda
+;   :after org-agenda
+;   :init
+;   (setq org-super-agenda-groups '((:name "Today"
+;                                   :time-grid t
+;                                   :scheduled today)
+;                            (:name "Due today"
+;                                   :deadline today)
+;                            (:name "Important"
+;                                   :priority "A")
+;                            (:name "Overdue"
+;                                   :deadline past)
+;                            (:name "Due soon"
+;                                   :deadline future)
+;                            (:name "Big Outcomes"
+;                                   :tag "bo")))
 ;   :config
-
-;   (setq python-shell-interpreter "jupyter-console"
-;         python-shell-interpreter-args "--simple-prompt"
-;         python-shell-prompt-detect-failure-warning nil)
-;   (add-to-list 'python-shell-completion-native-disabled-interpreters
-;                "jupyter-console")
-;   (add-to-list 'python-shell-completion-native-disabled-interpreters
-;                "jupyter")
-;; RealPython sample (mostly)
-(use-package! python
-    :config
-    (setq python-shell-interpreter "jupyter-console"
-          python-shell-interpreter-args "--simple-prompt"
-          python-shell-prompt-detect-failure-warning nil)
-    (add-to-list 'python-shell-completion-native-disabled-interpreters
-                  "jupyter-console")
-    (add-to-list 'python-shell-completion-native-disabled-interpreters
-                 "jupyter"))
-
-;; trying to get pyenv and elpy to work together
-(use-package! elpy
-    :hook 
-    (elpy-mode . flycheck-mode)
-     ;; Cause recursive load error:
-     ; (pyenv-mode . elpy-rpc-restart))
-    :init
-    (elpy-enable)
-    :config
-    (setenv "workon_home" "~/.pyenv/versions/")
-    (setq elpy-rpc-backend "jedi")
-    (setq python-shell-interpreter "~/.pyenv/shims/python3")
-    (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
-)
-; (use-package! elpy
-;     ; :straight t
-;     :defer t
-;     :bind
-;     (:map elpy-mode-map
-;           ("C-M-n" . elpy-nav-forward-block)
-;           ("C-M-p" . elpy-nav-backward-block))
-;     :hook ((elpy-mode . flycheck-mode)
-;            (pyenv-mode . elpy-rpc-restart))
+;   (org-super-agenda-mode)
+; )
+; ;; Hide the startup message
+; ;; (setq inhibit-startup-message)
+; (use-package! pyenv-mode
 ;     :init
-;     ; (elpy-version)
-;     ; (elpy-enable)
-;     (advice-add 'python-mode :after 'elpy-enable)
+;     (pyenv-mode)
 ;     :config
-;     (setq elpy-modules (delq 'elpy-module-flymake elpy-modules)))
+;     (setenv "WORKON_HOME" "~/.pyenv/versions/")
+;     (setq python-shell-interpreter "~/.pyenv/shims/python3")
+;     (defun projectile-pyenv-mode-set ()
+;       "Set pyenv version matching project name."
+;       (let ((project (projectile-project-name)))
+;         (if (member project (pyenv-mode-versions))
+;             (pyenv-mode-set project)
+;           (pyenv-mode-unset))))
+
+;     (add-hook 'projectile-after-switch-project-hook 'projectile-pyenv-mode-set)
+
+;     (defun ssbb-pyenv-hook ()
+;     "Automatically activates pyenv version if .python-version file exists."
+;     (f-traverse-upwards
+;     (lambda (path)
+;       (let ((pyenv-version-path (f-expand ".python-version" path)))
+;         (if (f-exists? pyenv-version-path)
+;             (pyenv-mode-set (s-trim (f-read-text pyenv-version-path 'utf-8))))))))
+
+;     (add-hook 'find-file-hook 'ssbb-pyenv-hook))
+
+; (setq-hook! python-mode 'eglot-ensure)
+; (add-hook! python-mode 'eglot-ensure)
+; (add-hook 'python-mode-hook 'eglot-ensure)
+(use-package! lsp-mode
+  ; :ensure t
+  :config
+
+  ;; change nil to 't to enable logging of packets between emacs and the LS
+  ;; this was invaluable for debugging communication with the MS Python Language Server
+  ;; and comparing this with what vs.code is doing
+  (setq lsp-print-io nil)
+
+  ;; lsp-ui gives us the blue documentation boxes and the sidebar info
+  (use-package! lsp-ui
+    ; :ensure t
+    :config
+    (setq lsp-ui-sideline-ignore-duplicate t)
+    (add-hook 'lsp-mode-hook 'lsp-ui-mode))
+
+  ;; make sure we have lsp-imenu everywhere we have LSP
+  (require 'lsp-imenu)
+  (add-hook 'lsp-after-open-hook 'lsp-enable-imenu)
+
+  ;; install LSP company backend for LSP-driven completion
+  (use-package! company-lsp
+    ; :ensure t
+    :config
+    (push 'company-lsp company-backends))
+)
+
+(use-package! lsp-python-ms
+  :hook (python-mode . (lambda ()
+                          (require 'lsp-python-ms)
+                          (lsp))))  ; or lsp-deferred
 
 (use-package! blacken
     ; :straight t
@@ -137,59 +140,60 @@
     :config
     (setq blacken-line-length '88))
 
-(use-package! python-docstring
-    :hook (python-mode . python-docstring-mode))
+;; install LSP company backend for LSP-driven completion
+; (use-package! company-lsp
+; :config
+; (push 'company-lsp company-backends))
 
+; (use-package! jupyter
+;   ; :straight t
+;   :hook
+;   (jupyter-repl-mode . (lambda ()
+;                          (setq company-backends '(company-capf))))
+;   :bind
+;   (:map jupyter-repl-mode-map
+;         ("C-M-n" . jupyter-repl-history-next)
+;         ("C-M-p" . jupyter-repl-history-previous)
+;         ("M-n" . jupyter-repl-forward-cell)
+;         ("M-p" . jupyter-repl-backward-cell)
+;         :map jupyter-repl-interaction-mode-map
+;         ("M-i" . nil)
+;         ("C-?" . jupyter-inspect-at-point)))
 
-(use-package! jupyter
-  ; :straight t
-  :hook
-  (jupyter-repl-mode . (lambda ()
-                         (setq company-backends '(company-capf))))
-  :bind
-  (:map jupyter-repl-mode-map
-        ("C-M-n" . jupyter-repl-history-next)
-        ("C-M-p" . jupyter-repl-history-previous)
-        ("M-n" . jupyter-repl-forward-cell)
-        ("M-p" . jupyter-repl-backward-cell)
-        :map jupyter-repl-interaction-mode-map
-        ("M-i" . nil)
-        ("C-?" . jupyter-inspect-at-point)))
+; ;; Company configuration from same Elpy guide
+; (use-package! company
+;   ; :straight t
+;   :diminish company-mode
+;   :init
+;   (global-company-mode)
+;   :config
+;   ;; set default `company-backends'
+;   (setq company-backends
+;         '((company-capf           ; completion-at-point-functions
+;            company-files          ; files & directory
+;            company-keywords)       ; keywords
+;           (company-abbrev company-dabbrev)
+;           )))
+;   (use-package! company-statistics
+;       ; :straight t
+;       :init
+;       (company-statistics-mode))
+;   (use-package! company-web
+;       ; :straight t)
+;       )
+;   (use-package! company-try-hard
+;       ; :straight t
+;       :bind
+;       (("C-<tab>" . company-try-hard)
+;        :map company-active-map
+;        ("C-<tab>" . company-try-hard)))
+;   (use-package! company-quickhelp
+;       ; :straight t
+;       :config
+;       (company-quickhelp-mode))
+; )
 
-;; Company configuration from same Elpy guide
-(use-package! company
-  ; :straight t
-  :diminish company-mode
-  :init
-  (global-company-mode)
-  :config
-  ;; set default `company-backends'
-  (setq company-backends
-        '((company-files          ; files & directory
-           company-keywords       ; keywords
-           company-capf)          ; completion-at-point-functions
-          (company-abbrev company-dabbrev)
-          ))
-  (use-package! company-statistics
-      ; :straight t
-      :init
-      (company-statistics-mode))
-  (use-package! company-web
-      ; :straight t)
-      )
-  (use-package! company-try-hard
-      ; :straight t
-      :bind
-      (("C-<tab>" . company-try-hard)
-       :map company-active-map
-       ("C-<tab>" . company-try-hard)))
-  (use-package! company-quickhelp
-      ; :straight t
-      :config
-      (company-quickhelp-mode))
-)
-
-
+ ========================================
 
 
 

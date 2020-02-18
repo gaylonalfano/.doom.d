@@ -42,17 +42,29 @@
 ;; our package manager can't deal with; see raxod502/straight.el#279)
 ;(package! builtin-package :recipe (:branch "develop"))
 
-;; ROUND 2 Python Elpy attempt following RealPython Guide
-(package! org-super-agenda)
-(package! elpy)
-(package! company-statistics)
-(package! company-web)
-(package! company-try-hard)
-(package! company-quickhelp)
+; latest attempt: trying for MPLS lsp-python-ms
+; (package! org-super-agenda)
+(package! lsp-python-ms)
 (package! blacken)
-(package! python-docstring)
-(package! pyenv-mode)
-(package! jupyter)
+; (package! eglot)
+; (package! pyenv-mode)
+; (package! jupyter)
+; (package! company-statistics)
+; (package! company-web)
+; (package! company-try-hard)
+; (package! company-quickhelp)
+
+;; ROUND 2 Python Elpy attempt following RealPython Guide
+; (package! org-super-agenda)
+; (package! elpy)
+; (package! company-statistics)
+; (package! company-web)
+; (package! company-try-hard)
+; (package! company-quickhelp)
+; (package! blacken)
+; (package! python-docstring)
+; (package! pyenv-mode)
+; (package! jupyter)
 
 
 
